@@ -1,8 +1,16 @@
 ![Claude Code Action responding to a comment](https://github.com/user-attachments/assets/1d60c2e9-82ed-4ee5-b749-f9e021c85f4d)
 
-# Claude Code Action
+# Claude Code Action (Fork)
+
+> **Note**: This is a fork of the original [anthropics/claude-code-action](https://github.com/anthropics/claude-code-action) with enhanced authentication capabilities.
 
 A general-purpose [Claude Code](https://claude.ai/code) action for GitHub PRs and issues that can answer questions and implement code changes. This action listens for a trigger phrase in comments and activates Claude act on the request. It supports multiple authentication methods including Anthropic direct API, Amazon Bedrock, and Google Vertex AI.
+
+## Fork Enhancements
+
+- **Pre-authenticated Environment Support**: Use `skip_api_key_check: true` to run in environments where authentication is already configured
+- **Custom Runner Support**: Run on your own custom runners with pre-configured authentication
+- **Uses forked base action**: `andreichenchik/claude-code-base-action@main` which supports automatic authentication
 
 ## Features
 
@@ -53,7 +61,7 @@ jobs:
   claude-response:
     runs-on: ubuntu-latest
     steps:
-      - uses: anthropics/claude-code-action@beta
+      - uses: andreichenchik/claude-code-action@main
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -62,6 +70,26 @@ jobs:
           # Optional: add assignee trigger for issues
           # assignee_trigger: "claude"
 ```
+
+### Using Custom Runners with Pre-authenticated Environments
+
+If you're using a custom runner with pre-configured authentication (e.g., a runner that already has Anthropic API credentials configured in the environment), you can skip the API key requirement:
+
+```yaml
+jobs:
+  claude-response:
+    runs-on: [self-hosted, pre-authenticated]  # Your custom runner labels
+    steps:
+      - uses: andreichenchik/claude-code-action@main
+        with:
+          skip_api_key_check: true  # Skip API key validation
+          # No need to provide anthropic_api_key if your runner has it configured
+```
+
+This is particularly useful for:
+- Enterprise environments with centralized authentication
+- Self-hosted runners with pre-configured credentials
+- Environments where API keys are managed at the infrastructure level
 
 ## Inputs
 
@@ -75,6 +103,7 @@ jobs:
 | `anthropic_model`     | **DEPRECATED**: Use `model` instead. Kept for backward compatibility.                                                | No       | -         |
 | `use_bedrock`         | Use Amazon Bedrock with OIDC authentication instead of direct Anthropic API                                          | No       | `false`   |
 | `use_vertex`          | Use Google Vertex AI with OIDC authentication instead of direct Anthropic API                                        | No       | `false`   |
+| `skip_api_key_check`  | Skip API key validation (useful for pre-authenticated environments)                                                  | No       | `false`   |
 | `allowed_tools`       | Additional tools for Claude to use (the base GitHub tools will always be included)                                   | No       | ""        |
 | `disallowed_tools`    | Tools that Claude should never use                                                                                   | No       | ""        |
 | `custom_instructions` | Additional custom instructions to include in the prompt for Claude                                                   | No       | ""        |
@@ -159,7 +188,7 @@ on:
       - "src/api/**/*.ts"
 
 steps:
-  - uses: anthropics/claude-code-action@beta
+  - uses: andreichenchik/claude-code-action@main
     with:
       direct_prompt: |
         Update the API documentation in README.md to reflect
@@ -183,7 +212,7 @@ jobs:
       github.event.pull_request.user.login == 'developer1' ||
       github.event.pull_request.user.login == 'external-contributor'
     steps:
-      - uses: anthropics/claude-code-action@beta
+      - uses: andreichenchik/claude-code-action@main
         with:
           direct_prompt: |
             Please provide a thorough review of this pull request.
@@ -242,7 +271,7 @@ Claude does **not** have access to execute arbitrary Bash commands by default. I
 **Note**: If your repository has a `.mcp.json` file in the root directory, Claude will automatically detect and use the MCP server tools defined there. However, these tools still need to be explicitly allowed via the `allowed_tools` configuration.
 
 ```yaml
-- uses: anthropics/claude-code-action@beta
+- uses: andreichenchik/claude-code-action@main
   with:
     allowed_tools: "Bash(npm install),Bash(npm run test),Edit,Replace,NotebookEditCell"
     disallowed_tools: "TaskOutput,KillTask"
@@ -256,7 +285,7 @@ Claude does **not** have access to execute arbitrary Bash commands by default. I
 Use a specific Claude model:
 
 ```yaml
-- uses: anthropics/claude-code-action@beta
+- uses: andreichenchik/claude-code-action@main
   with:
     # model: "claude-3-5-sonnet-20241022"  # Optional: specify a different model
     # ... other inputs
@@ -284,20 +313,20 @@ Use provider-specific model names based on your chosen provider:
 
 ```yaml
 # For direct Anthropic API (default)
-- uses: anthropics/claude-code-action@beta
+- uses: andreichenchik/claude-code-action@main
   with:
     anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
     # ... other inputs
 
 # For Amazon Bedrock with OIDC
-- uses: anthropics/claude-code-action@beta
+- uses: andreichenchik/claude-code-action@main
   with:
     model: "anthropic.claude-3-7-sonnet-20250219-beta:0" # Cross-region inference
     use_bedrock: "true"
     # ... other inputs
 
 # For Google Vertex AI with OIDC
-- uses: anthropics/claude-code-action@beta
+- uses: andreichenchik/claude-code-action@main
   with:
     model: "claude-3-7-sonnet@20250219"
     use_vertex: "true"
@@ -323,7 +352,7 @@ Both AWS Bedrock and GCP Vertex AI require OIDC authentication.
     app-id: ${{ secrets.APP_ID }}
     private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-- uses: anthropics/claude-code-action@beta
+- uses: andreichenchik/claude-code-action@main
   with:
     model: "anthropic.claude-3-7-sonnet-20250219-beta:0"
     use_bedrock: "true"
@@ -348,7 +377,7 @@ Both AWS Bedrock and GCP Vertex AI require OIDC authentication.
     app-id: ${{ secrets.APP_ID }}
     private-key: ${{ secrets.APP_PRIVATE_KEY }}
 
-- uses: anthropics/claude-code-action@beta
+- uses: andreichenchik/claude-code-action@main
   with:
     model: "claude-3-7-sonnet@20250219"
     use_vertex: "true"
