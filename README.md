@@ -1,3 +1,5 @@
+ARCHIVED, please use https://github.com/grll/claude-code-action
+
 ![Claude Code Action responding to a comment](https://github.com/user-attachments/assets/1d60c2e9-82ed-4ee5-b749-f9e021c85f4d)
 
 # Claude Code Action (Fork)
